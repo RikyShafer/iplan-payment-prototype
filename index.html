@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>מערכת ניהול דרישות תשלום | מינהל התכנון</title>
+<link rel="icon" href="https://www.gov.il/favicon.ico" type="image/x-icon">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Heebo',sans-serif;direction:rtl;background:#F0F2F5;color:#111827;min-height:100vh;font-size:14px}
+.shell{display:flex;min-height:100vh}
+.sidebar{width:240px;flex-shrink:0;background:#1C2B4A;display:flex;flex-direction:column;position:fixed;top:0;right:0;bottom:0;z-index:200}
+.main{margin-right:240px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.sb-logo{padding:24px 20px 18px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.sb-logo-title{font-size:16px;font-weight:800;color:#fff;line-height:1.3}
+.sb-logo-sub{font-size:11px;color:rgba(255,255,255,0.45);margin-top:3px}
+.sb-badge{display:inline-block;background:#2563EB;color:#fff;font-size:10px;border-radius:4px;padding:2px 8px;margin-top:8px;font-weight:700;letter-spacing:.5px}
+.sb-section{padding:16px 12px 4px}
+.sb-section-label{font-size:10px;color:rgba(255,255,255,0.3);font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:0 8px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:10px 16px;border-radius:8px;cursor:pointer;font-size:14px;color:rgba(255,255,255,0.55);transition:all .15s;margin:2px 8px;border:1px solid transparent;user-select:none}
+.sb-item:hover{background:rgba(255,255,255,0.08);color:#fff}
+.sb-item.active{background:rgba(37,99,235,0.35);color:#fff;border-color:rgba(37,99,235,0.5);font-weight:600}
+.sb-icon{width:18px;text-align:center;font-size:15px;flex-shrink:0}
+.sb-badge-num{margin-right:auto;background:#EF4444;color:#fff;font-size:10px;font-weight:700;border-radius:10px;padding:1px 7px;min-width:20px;text-align:center}
+.sb-bottom{margin-top:auto;padding:16px 12px}
+.role-toggle{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:12px 14px;cursor:pointer;transition:all .2s}
+.role-toggle:hover{background:rgba(255,255,255,0.12)}
+.role-toggle-label{font-size:10px;color:rgba(255,255,255,0.4);font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.role-pills{display:flex;gap:6px}
+.role-pill{flex:1;text-align:center;padding:6px 4px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;color:rgba(255,255,255,0.4);border:1px solid transparent}
+.role-pill.active{background:#2563EB;color:#fff;border-color:#3B82F6}
+.topbar{padding:16px 32px;border-bottom:1px solid #E5E7EB;background:#fff;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+.topbar-title{font-size:18px;font-weight:800;color:#111827}
+.topbar-sub{font-size:12px;color:#6B7280;margin-top:2px}
+.topbar-role-badge{display:inline-flex;align-items:center;gap:5px;background:#EFF6FF;border:1px solid #BFDBFE;color:#1D4ED8;font-size:11px;font-weight:700;border-radius:20px;padding:3px 10px;margin-top:4px}
+.topbar-role-badge.org{background:#F0FDF4;border-color:#BBF7D0;color:#15803D}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;border:1px solid #D1D5DB;background:#fff;color:#374151;transition:all .15s;font-family:'Heebo',sans-serif;white-space:nowrap}
+.btn:hover{background:#F9FAFB;border-color:#9CA3AF}
+.btn-primary{background:#1D4ED8;color:#fff;border-color:#1D4ED8}
+.btn-primary:hover{background:#1E40AF}
+.btn-success{background:#15803D;color:#fff;border-color:#15803D}
+.btn-success:hover{background:#166534}
+.btn-danger{background:#B91C1C;color:#fff;border-color:#B91C1C}
+.btn-danger:hover{background:#991B1B}
+.btn-warn{background:#B45309;color:#fff;border-color:#B45309}
+.btn-warn:hover{background:#92400E}
+.btn-sm{padding:6px 12px;font-size:12px}
+.content{flex:1;padding:28px 32px}
+.screen{display:none}
+.screen.active{display:block}
+.stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:24px}
+.stat-card{background:#fff;border-radius:12px;padding:18px 20px;border:1px solid #E5E7EB;border-top:4px solid #E5E7EB;box-shadow:0 1px 3px rgba(0,0,0,0.05);transition:box-shadow .2s}
+.stat-card:hover{box-shadow:0 4px 12px rgba(0,0,0,0.08)}
+.stat-card.c-blue{border-top-color:#2563EB}
+.stat-card.c-green{border-top-color:#16A34A}
+.stat-card.c-yellow{border-top-color:#D97706}
+.stat-card.c-red{border-top-color:#DC2626}
+.stat-label{font-size:11px;color:#6B7280;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.stat-value{font-size:32px;font-weight:900;color:#111827;margin:6px 0 3px;line-height:1}
+.stat-sub{font-size:12px;color:#9CA3AF}
+.table-card{background:#fff;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.table-header{padding:14px 20px;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between}
+.table-title{font-size:14px;font-weight:700;color:#111827}
+table{width:100%;border-collapse:collapse}
+th{padding:11px 16px;text-align:right;font-size:11px;color:#6B7280;font-weight:700;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #E5E7EB;background:#F9FAFB}
+td{padding:13px 16px;font-size:13px;border-bottom:1px solid #F3F4F6;color:#111827;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr{cursor:pointer;transition:background .1s}
+tbody tr:hover td{background:#EFF6FF}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:4px 11px;border-radius:20px;font-size:11px;font-weight:700}
+.chip::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block;opacity:.7}
+.chip-draft{background:#F3F4F6;color:#4B5563}
+.chip-review{background:#DBEAFE;color:#1D4ED8}
+.chip-clarify{background:#FEF3C7;color:#92400E}
+.chip-approved{background:#DCFCE7;color:#15803D}
+.chip-rejected{background:#FEE2E2;color:#B91C1C}
+.sla-ok{color:#15803D;font-size:12px;font-weight:700}
+.sla-warn{color:#D97706;font-size:12px;font-weight:700}
+.sla-crit{color:#DC2626;font-size:12px;font-weight:700;animation:blink 1.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.45}}
+.urg-h{color:#DC2626;font-size:12px;font-weight:700}
+.urg-m{color:#D97706;font-size:12px;font-weight:700}
+.urg-l{color:#15803D;font-size:12px;font-weight:700}
+.filters{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.filters select,.filters input{background:#fff;border:1px solid #D1D5DB;border-radius:8px;padding:8px 12px;font-size:13px;color:#374151;font-family:'Heebo',sans-serif;transition:border .15s}
+.filters select{min-width:160px}
+.filters input{min-width:200px}
+.filters select:focus,.filters input:focus{outline:none;border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,0.1)}
+.form-section{background:#fff;border:1px solid #E5E7EB;border-radius:14px;overflow:hidden;margin-bottom:18px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.form-section-header{padding:16px 24px;border-bottom:2px solid #E5E7EB;display:flex;align-items:center;gap:12px;background:linear-gradient(to left,#F8FAFC,#fff)}
+.form-section-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px;background:#EFF6FF;flex-shrink:0}
+.form-section-title{font-size:15px;font-weight:800;color:#111827}
+.form-section-sub{font-size:12px;color:#6B7280;margin-top:1px}
+.form-body{padding:24px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.fg{display:flex;flex-direction:column;gap:6px}
+.fg.full{grid-column:1/-1}
+label{font-size:12px;color:#374151;font-weight:700}
+label span{color:#DC2626;margin-right:2px}
+input[type=text],input[type=number],input[type=date],select,textarea{background:#F9FAFB;border:1.5px solid #E5E7EB;border-radius:9px;padding:10px 14px;font-size:14px;color:#111827;font-family:'Heebo',sans-serif;width:100%;transition:border-color .15s,background .15s,box-shadow .15s}
+input[type=text]:focus,input[type=number]:focus,input[type=date]:focus,select:focus,textarea:focus{outline:none;background:#fff;border-color:#2563EB;box-shadow:0 0 0 3px rgba(37,99,235,0.12)}
+textarea{resize:vertical;min-height:100px;line-height:1.7}
+.field-hint{font-size:11px;color:#9CA3AF;margin-top:2px}
+.upload-zone{border:2px dashed #CBD5E1;border-radius:12px;padding:36px 24px;text-align:center;cursor:pointer;transition:all .2s;background:#FAFBFC}
+.upload-zone:hover{border-color:#2563EB;background:#EFF6FF}
+.upload-main{font-size:14px;font-weight:600;color:#374151;margin:10px 0 4px}
+.upload-sub{font-size:12px;color:#9CA3AF}
+.upload-icon-big{font-size:36px}
+.file-pill{display:flex;align-items:center;justify-content:space-between;background:#F0F9FF;border:1px solid #BAE6FD;border-radius:8px;padding:9px 14px;margin-top:8px}
+.file-pill-name{font-size:13px;font-weight:600;color:#0369A1;display:flex;align-items:center;gap:8px}
+.file-pill-size{font-size:11px;color:#64748B}
+.file-pill-del{cursor:pointer;color:#94A3B8;font-size:16px;transition:color .15s}
+.file-pill-del:hover{color:#EF4444}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;margin-bottom:28px}
+.review-grid{display:grid;grid-template-columns:1fr 300px;gap:18px}
+.review-card{background:#fff;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05);margin-bottom:14px}
+.rc-header{padding:16px 20px;border-bottom:1px solid #E5E7EB;display:flex;align-items:flex-start;justify-content:space-between}
+.rc-id{font-size:11px;color:#6B7280;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.rc-title{font-size:16px;font-weight:800;color:#111827;margin-top:4px}
+.rc-body{padding:16px 20px}
+.dr{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #F3F4F6}
+.dr:last-child{border-bottom:none}
+.dk{font-size:11px;color:#6B7280;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.dv{font-size:13px;color:#111827;font-weight:500}
+.action-panel{background:#fff;border:1px solid #E5E7EB;border-radius:12px;padding:18px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.ap-title{font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #F3F4F6}
+.action-btns{display:flex;flex-direction:column;gap:8px}
+.history-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #F3F4F6}
+.history-item:last-child{border-bottom:none}
+.history-dot{width:8px;height:8px;border-radius:50%;background:#CBD5E1;flex-shrink:0;margin-top:5px}
+.history-dot.blue{background:#2563EB}
+.history-dot.yellow{background:#D97706}
+.history-dot.green{background:#15803D}
+.history-date{font-size:11px;color:#9CA3AF;white-space:nowrap}
+.history-text{font-size:12px;color:#374151}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+.dash-card{background:#fff;border:1px solid #E5E7EB;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.05)}
+.dc-header{padding:14px 18px;border-bottom:1px solid #E5E7EB;font-size:13px;font-weight:700;color:#111827}
+.dc-body{padding:16px 18px}
+.sla-row{margin-bottom:14px}
+.sla-row-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px}
+.sla-proj{font-size:13px;color:#374151;font-weight:500}
+.sla-track{height:8px;background:#F3F4F6;border-radius:4px;overflow:hidden}
+.sla-fill{height:100%;border-radius:4px;transition:width .6s ease}
+.bar-chart{display:flex;align-items:flex-end;gap:10px;height:100px;padding-top:10px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bar-rect{width:100%;border-radius:5px 5px 0 0;min-height:4px;transition:height .4s}
+.bar-mlabel{font-size:10px;color:#9CA3AF;font-weight:500}
+.bar-num{font-size:11px;color:#374151;font-weight:700}
+.alert-item{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-radius:10px;margin-bottom:8px}
+.ai-crit{background:#FEF2F2;border:1px solid #FECACA}
+.ai-warn{background:#FFFBEB;border:1px solid #FDE68A}
+.ai-text-crit{font-size:13px;color:#7F1D1D}
+.ai-text-warn{font-size:13px;color:#78350F}
+
+/* Role-aware banners */
+.banner{display:flex;align-items:center;gap:10px;border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:13px;font-weight:600}
+.banner-consultant{background:#EFF6FF;border:1px solid #BFDBFE;color:#1D4ED8}
+.banner-org{background:#F0FDF4;border:1px solid #BBF7D0;color:#15803D;display:none}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#111827;color:#fff;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:600;z-index:9999;opacity:0;transition:all .3s;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-title">מינהל התכנון</div>
+      <div class="sb-logo-sub">אגף טכנולוגיות דיגיטליות</div>
+      <span class="sb-badge">אב-טיפוס</span>
+    </div>
+    <div class="sb-section">
+      <div class="sb-section-label">ניווט ראשי</div>
+    </div>
+    <div class="sb-item active" id="nav-home" onclick="goTo('home')">
+      <span class="sb-icon">🏠</span> מסך בית
+      <span class="sb-badge-num" id="pendingBadge">3</span>
+    </div>
+    <div class="sb-item" id="nav-submit" onclick="goTo('submit')">
+      <span class="sb-icon">📝</span> הגשת בקשה
+    </div>
+    <div class="sb-item" id="nav-review" onclick="goTo('review')">
+      <span class="sb-icon">✅</span> טיפול ואישור
+    </div>
+    <div class="sb-item" id="nav-dashboard" onclick="goTo('dashboard')">
+      <span class="sb-icon">📊</span> דשבורד SLA
+    </div>
+    <div class="sb-bottom">
+      <div class="role-toggle" onclick="toggleRole()">
+        <div class="role-toggle-label">תצוגה פעילה</div>
+        <div class="role-pills">
+          <div class="role-pill active" id="pill-consultant">יועץ</div>
+          <div class="role-pill" id="pill-org">עובד ארגון</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="pageTitle">מסך בית — רשימת בקשות</div>
+        <div class="topbar-sub">מינהל התכנון | מערכת דרישות תשלום</div>
+        <div class="topbar-role-badge" id="roleBadge">👤 יועץ חיצוני</div>
+      </div>
+      <button class="btn btn-primary" onclick="goTo('submit')">+ בקשה חדשה</button>
+    </div>
+
+    <div class="content">
+
+      <!-- HOME -->
+      <div class="screen active" id="screen-home">
+        <div class="banner banner-consultant" id="banner-home-consultant">📋 ברוך הבא! מוצגות הבקשות שהגשת בלבד.</div>
+        <div class="banner banner-org" id="banner-home-org">🏢 תצוגת עובד ארגון — מוצגות כל הבקשות הממתינות לטיפולך.</div>
+
+        <div class="stats-grid">
+          <div class="stat-card c-blue">
+            <div class="stat-label">סה"כ בקשות</div>
+            <div class="stat-value" id="stat-total">10</div>
+            <div class="stat-sub">בשנה השוטפת</div>
+          </div>
+          <div class="stat-card c-green">
+            <div class="stat-label">אושרו</div>
+            <div class="stat-value" id="stat-approved">2</div>
+            <div class="stat-sub" id="stat-approved-sum">₪ 115,000</div>
+          </div>
+          <div class="stat-card c-yellow">
+            <div class="stat-label">בטיפול</div>
+            <div class="stat-value" id="stat-pending">5</div>
+            <div class="stat-sub">ממתינות לאישור</div>
+          </div>
+          <div class="stat-card c-red">
+            <div class="stat-label">חריגת SLA</div>
+            <div class="stat-value" id="stat-sla">3</div>
+            <div class="stat-sub">מעל 90 יום</div>
+          </div>
+        </div>
+
+        <div class="filters">
+          <select id="filterStatus" onchange="renderTable()">
+            <option value="">כל הסטטוסים</option>
+            <option value="draft">טיוטה</option>
+            <option value="review">בבדיקה</option>
+            <option value="clarify">ממתין להבהרות</option>
+            <option value="approved">אושר לתשלום</option>
+            <option value="rejected">נדחה</option>
+          </select>
+          <select id="filterProject" onchange="renderTable()">
+            <option value="">כל הפרויקטים</option>
+            <option>תב"ע אזור צפון</option>
+            <option>שדרוג תשתיות</option>
+            <option>ייעוץ אסטרטגי</option>
+            <option>מיפוי קרקעות</option>
+            <option>תכנון דרכים</option>
+          </select>
+          <input type="text" id="filterSearch" placeholder="🔍 חיפוש לפי שם יועץ..." oninput="renderTable()">
+        </div>
+
+        <div class="table-card">
+          <div class="table-header">
+            <span class="table-title">כל הבקשות</span>
+            <span style="font-size:12px;color:#9CA3AF" id="rowCount">10 רשומות</span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th><th>יועץ</th><th>פרויקט</th>
+                <th>סכום</th><th>תאריך הגשה</th>
+                <th>SLA</th><th>דחיפות</th><th>סטטוס</th>
+              </tr>
+            </thead>
+            <tbody id="tBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SUBMIT -->
+      <div class="screen" id="screen-submit">
+        <div class="banner banner-consultant" id="banner-submit-consultant">📝 הגשת בקשה חדשה — מלא את כל השדות המסומנים בכוכבית.</div>
+        <div class="banner banner-org" id="banner-submit-org">🏢 הגשה בשם יועץ — וודא שכל הפרטים תואמים את החוזה הרשמי.</div>
+
+        <div class="form-section">
+          <div class="form-section-header">
+            <div class="form-section-icon">👤</div>
+            <div>
+              <div class="form-section-title">פרטי היועץ והחוזה</div>
+              <div class="form-section-sub">פרטים מזהים — כפי שמופיעים בחוזה</div>
+            </div>
+          </div>
+          <div class="form-body">
+            <div class="form-grid">
+              <div class="fg">
+                <label>שם היועץ / החברה <span>*</span></label>
+                <input type="text" id="f-name" placeholder="לדוגמה: ישראל ישראלי ייעוץ בע&quot;מ">
+              </div>
+              <div class="fg">
+                <label>מספר חוזה <span>*</span></label>
+                <input type="text" id="f-contract" placeholder="לדוגמה: C-2025-047">
+              </div>
+              <div class="fg">
+                <label>שיוך יחידה / פרויקט <span>*</span></label>
+                <select id="f-project">
+                  <option value="">— בחר פרויקט —</option>
+                  <option>תב"ע אזור צפון</option>
+                  <option>שדרוג תשתיות</option>
+                  <option>ייעוץ אסטרטגי</option>
+                  <option>מיפוי קרקעות</option>
+                  <option>תכנון דרכים</option>
+                </select>
+              </div>
+              <div class="fg">
+                <label>אחראי ארגוני <span>*</span></label>
+                <select id="f-owner">
+                  <option value="">— בחר —</option>
+                  <option>ד"ר רוני כהן</option>
+                  <option>מיכל לוי</option>
+                  <option>יוסי גרינברג</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-header">
+            <div class="form-section-icon">💰</div>
+            <div>
+              <div class="form-section-title">פרטי הביצוע והתשלום</div>
+              <div class="form-section-sub">תקופת העבודה והסכום המבוקש</div>
+            </div>
+          </div>
+          <div class="form-body">
+            <div class="form-grid">
+              <div class="fg">
+                <label>סכום לתשלום (₪) <span>*</span></label>
+                <input type="number" id="f-amount" placeholder="0" min="0">
+              </div>
+              <div class="fg">
+                <label>דחיפות</label>
+                <select id="f-urgency">
+                  <option value="l">נמוכה</option>
+                  <option value="m">בינונית</option>
+                  <option value="h">גבוהה</option>
+                </select>
+              </div>
+              <div class="fg">
+                <label>תקופת ביצוע — מ <span>*</span></label>
+                <input type="date" id="f-from">
+              </div>
+              <div class="fg">
+                <label>תקופת ביצוע — עד <span>*</span></label>
+                <input type="date" id="f-to">
+              </div>
+              <div class="fg full">
+                <label>תיאור הביצוע <span>*</span></label>
+                <textarea id="f-desc" placeholder="פרט את פעולות הייעוץ שבוצעו, תוצרים שהוגשו ואבני דרך שהושגו..."></textarea>
+                <div class="field-hint">מינימום 50 תווים. תיאור מפורט מאיץ את תהליך האישור.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-section-header">
+            <div class="form-section-icon">📎</div>
+            <div>
+              <div class="form-section-title">מסמכים מצורפים</div>
+              <div class="form-section-sub">חשבונית מס, דוחות, חוזה — PDF / DOCX / XLSX</div>
+            </div>
+          </div>
+          <div class="form-body">
+            <div class="upload-zone" onclick="addFile()">
+              <div class="upload-icon-big">📂</div>
+              <div class="upload-main">לחץ להעלאת קבצים או גרור לכאן</div>
+              <div class="upload-sub">PDF, DOCX, XLSX — עד 10MB לקובץ</div>
+            </div>
+            <div id="fileList">
+              <div class="file-pill">
+                <span class="file-pill-name">📄 חשבונית_047_2025.pdf</span>
+                <span style="display:flex;align-items:center;gap:12px">
+                  <span class="file-pill-size">48 KB</span>
+                  <span class="file-pill-del" onclick="this.closest('.file-pill').remove()">✕</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn" onclick="goTo('home')">ביטול</button>
+          <button class="btn" onclick="saveDraft()">💾 שמור טיוטה</button>
+          <button class="btn btn-primary" onclick="submitRequest()">הגש בקשה ←</button>
+        </div>
+      </div>
+
+      <!-- REVIEW -->
+      <div class="screen" id="screen-review">
+        <div class="banner banner-consultant" id="banner-review-consultant">👀 אתה צופה בסטטוס הבקשה שלך. לא ניתן לערוך לאחר הגשה.</div>
+        <div class="banner banner-org" id="banner-review-org">🏢 מצב עובד ארגון — ביכולתך לאשר, לדחות ולבקש הבהרות.</div>
+
+        <div style="margin-bottom:16px">
+          <select id="reviewSelect" onchange="loadReview()" style="font-size:13px;padding:9px 14px;border:1px solid #D1D5DB;border-radius:8px;background:#fff;font-family:'Heebo',sans-serif;min-width:400px">
+          </select>
+        </div>
+
+        <div class="review-grid">
+          <div>
+            <div class="review-card">
+              <div class="rc-header">
+                <div>
+                  <div class="rc-id" id="rv-id">—</div>
+                  <div class="rc-title" id="rv-title">—</div>
+                </div>
+                <span class="chip" id="rv-status">—</span>
+              </div>
+              <div class="rc-body">
+                <div class="dr"><span class="dk">יועץ</span><span class="dv" id="rv-consultant">—</span></div>
+                <div class="dr"><span class="dk">פרויקט</span><span class="dv" id="rv-project">—</span></div>
+                <div class="dr"><span class="dk">סכום מבוקש</span><span class="dv" id="rv-amount" style="font-weight:700;color:#1D4ED8">—</span></div>
+                <div class="dr"><span class="dk">תאריך הגשה</span><span class="dv" id="rv-submitted">—</span></div>
+                <div class="dr"><span class="dk">ימי טיפול</span><span class="dv" id="rv-days">—</span></div>
+                <div class="dr"><span class="dk">אחראי</span><span class="dv" id="rv-owner">—</span></div>
+              </div>
+            </div>
+            <div class="review-card">
+              <div class="rc-header"><span style="font-size:13px;font-weight:700">תיאור הביצוע</span></div>
+              <div class="rc-body" id="rv-desc" style="font-size:13px;color:#4B5563;line-height:1.8">—</div>
+            </div>
+          </div>
+
+          <div>
+            <!-- Actions - org only -->
+            <div class="action-panel" id="orgActions" style="display:none">
+              <div class="ap-title">פעולות גורם מקצועי</div>
+              <div class="action-btns">
+                <button class="btn btn-success" onclick="doAction('approved')">✓ אשר לתשלום</button>
+                <button class="btn btn-warn" onclick="doAction('clarify')">? בקש הבהרה</button>
+                <button class="btn btn-danger" onclick="doAction('rejected')">✗ דחה בקשה</button>
+              </div>
+            </div>
+            <!-- Status - consultant only -->
+            <div class="action-panel" id="consultantStatus">
+              <div class="ap-title">סטטוס הבקשה שלך</div>
+              <div style="background:#EFF6FF;border-radius:8px;padding:12px;font-size:13px;color:#1D4ED8;font-weight:500;text-align:center">
+                הבקשה נמצאת בבדיקה<br><span style="font-size:11px;color:#6B7280;font-weight:400">זמן ממוצע לאישור: 54 יום</span>
+              </div>
+            </div>
+            <!-- Notes - org only -->
+            <div class="action-panel" id="orgNotes" style="display:none">
+              <div class="ap-title">הערות פנימיות</div>
+              <textarea placeholder="הוסף הערה פנימית..." style="margin-bottom:8px;font-size:12px"></textarea>
+              <button class="btn" style="width:100%;font-size:12px" onclick="showToast('ההערה נשמרה ✓')">שמור הערה</button>
+            </div>
+            <div class="action-panel">
+              <div class="ap-title">היסטוריית טיפול</div>
+              <div id="historyList">
+                <div class="history-item"><div class="history-dot blue"></div><div><div class="history-date">15/04</div><div class="history-text">הוגשה ע"י יועץ</div></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div class="screen" id="screen-dashboard">
+        <div class="banner banner-consultant" id="banner-dash-consultant">📊 מצב הבקשות שלך לפי SLA.</div>
+        <div class="banner banner-org" id="banner-dash-org">🏢 דשבורד ניהולי — כל הבקשות מוצגות לפי SLA.</div>
+
+        <div class="stats-grid" style="margin-bottom:20px">
+          <div class="stat-card c-blue"><div class="stat-label">ממוצע זמן טיפול</div><div class="stat-value">54</div><div class="stat-sub">ימים לאישור</div></div>
+          <div class="stat-card c-red"><div class="stat-label">חריגת 90+ יום</div><div class="stat-value" id="dash-crit">3</div><div class="stat-sub">דורשות תשומת לב</div></div>
+          <div class="stat-card c-yellow"><div class="stat-label">50–90 יום</div><div class="stat-value">4</div><div class="stat-sub">בסיכון חריגה</div></div>
+          <div class="stat-card c-green"><div class="stat-label">עומדות ב-SLA</div><div class="stat-value">7</div><div class="stat-sub">פחות מ-50 יום</div></div>
+        </div>
+
+        <div class="dash-grid">
+          <div class="dash-card">
+            <div class="dc-header">זמן טיפול לפי פרויקט</div>
+            <div class="dc-body">
+              <div class="sla-row"><div class="sla-row-head"><span class="sla-proj">תב"ע אזור צפון</span><span class="sla-crit">107 יום ⚠</span></div><div class="sla-track"><div class="sla-fill" style="width:100%;background:#DC2626"></div></div></div>
+              <div class="sla-row"><div class="sla-row-head"><span class="sla-proj">שדרוג תשתיות</span><span class="sla-warn">82 יום</span></div><div class="sla-track"><div class="sla-fill" style="width:77%;background:#D97706"></div></div></div>
+              <div class="sla-row"><div class="sla-row-head"><span class="sla-proj">ייעוץ אסטרטגי</span><span class="sla-warn">76 יום</span></div><div class="sla-track"><div class="sla-fill" style="width:71%;background:#D97706"></div></div></div>
+              <div class="sla-row"><div class="sla-row-head"><span class="sla-proj">מיפוי קרקעות</span><span class="sla-ok">41 יום</span></div><div class="sla-track"><div class="sla-fill" style="width:38%;background:#16A34A"></div></div></div>
+              <div class="sla-row"><div class="sla-row-head"><span class="sla-proj">תכנון דרכים</span><span class="sla-ok">28 יום</span></div><div class="sla-track"><div class="sla-fill" style="width:26%;background:#16A34A"></div></div></div>
+            </div>
+          </div>
+          <div class="dash-card">
+            <div class="dc-header">בקשות לפי חודש (2025)</div>
+            <div class="dc-body">
+              <div class="bar-chart">
+                <div class="bar-col"><div class="bar-num">2</div><div class="bar-rect" style="height:29%;background:#93C5FD"></div><div class="bar-mlabel">ינו'</div></div>
+                <div class="bar-col"><div class="bar-num">1</div><div class="bar-rect" style="height:14%;background:#93C5FD"></div><div class="bar-mlabel">פב'</div></div>
+                <div class="bar-col"><div class="bar-num">3</div><div class="bar-rect" style="height:43%;background:#93C5FD"></div><div class="bar-mlabel">מרץ</div></div>
+                <div class="bar-col"><div class="bar-num">4</div><div class="bar-rect" style="height:57%;background:#3B82F6"></div><div class="bar-mlabel">אפר'</div></div>
+                <div class="bar-col"><div class="bar-num">2</div><div class="bar-rect" style="height:29%;background:#93C5FD"></div><div class="bar-mlabel">מאי</div></div>
+                <div class="bar-col"><div class="bar-num" id="junBar">7</div><div class="bar-rect" id="junRect" style="height:100%;background:#1D4ED8"></div><div class="bar-mlabel">יוני</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-card">
+          <div class="dc-header">התראות — בקשות קריטיות</div>
+          <div class="dc-body" id="alertList">
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// =====================
+// DATA STORE (JSON)
+// =====================
+let requests = [
+  {id:'BKR-2025-014',consultant:'ישראל ישראלי',project:'תב"ע אזור צפון',amount:85000,date:'15/06/2025',days:9,urg:'h',status:'review',desc:'ביצוע ייעוץ תכנוני מקיף לטובת הכנת תב"ע. הוגשו תוצרים: דוח ניתוח מצב קיים ושני תרחישי פיתוח חלופיים.',owner:"ד\"ר רוני כהן",history:[{dot:'blue',date:'15/06',text:'הוגשה ע"י ישראל ישראלי'},{dot:'blue',date:'17/06',text:'נפתחה ע"י ד"ר רוני כהן'}]},
+  {id:'BKR-2025-013',consultant:'מאיה כץ',project:'שדרוג תשתיות',amount:42000,date:'10/06/2025',days:14,urg:'m',status:'clarify',desc:'ייעוץ לשדרוג תשתיות תחבורה. הוגש דוח ביניים עם המלצות. הבקשה ממתינה להבהרה לגבי פירוט שעות העבודה.',owner:'מיכל לוי',history:[{dot:'blue',date:'10/06',text:'הוגשה ע"י מאיה כץ'},{dot:'yellow',date:'14/06',text:'בקשת הבהרה נשלחה'}]},
+  {id:'BKR-2025-012',consultant:'אריק בן-דוד',project:'ייעוץ אסטרטגי',amount:120000,date:'01/06/2025',days:23,urg:'h',status:'review',desc:'ייעוץ אסטרטגי לפרויקט שנתי. הוגשו: תכנית עבודה, ניתוח SWOT, והמלצות לשנת 2026.',owner:"ד\"ר רוני כהן",history:[{dot:'blue',date:'01/06',text:'הוגשה ע"י אריק בן-דוד'},{dot:'blue',date:'05/06',text:'נפתחה לבדיקה'}]},
+  {id:'BKR-2025-011',consultant:'רחל מור',project:'מיפוי קרקעות',amount:18500,date:'20/05/2025',days:35,urg:'l',status:'draft',desc:'מיפוי קרקעות לאזור פיתוח חדש. הבקשה בשלבי הכנה.',owner:'מיכל לוי',history:[{dot:'blue',date:'20/05',text:'טיוטה נשמרה'}]},
+  {id:'BKR-2025-010',consultant:'דני שמש',project:'תכנון דרכים',amount:67000,date:'15/05/2025',days:40,urg:'m',status:'approved',desc:'תכנון דרכים לאזור הצפון. הוגשו: תכניות הנדסיות, חוות דעת תנועה, ואישור רגולטורי.',owner:'יוסי גרינברג',history:[{dot:'blue',date:'15/05',text:'הוגשה ע"י דני שמש'},{dot:'green',date:'25/06',text:'אושר לתשלום'}]},
+  {id:'BKR-2025-009',consultant:'יוסי לוי',project:'תב"ע אזור צפון',amount:95000,date:'01/05/2025',days:54,urg:'m',status:'review',desc:'ייעוץ תכנוני שלב ב לאזור הצפון. הוגשו תרחישי פיתוח מפורטים.',owner:"ד\"ר רוני כהן",history:[{dot:'blue',date:'01/05',text:'הוגשה ע"י יוסי לוי'}]},
+  {id:'BKR-2025-008',consultant:'נועה שפיר',project:'ייעוץ אסטרטגי',amount:33000,date:'15/04/2025',days:70,urg:'l',status:'approved',desc:'ייעוץ אסטרטגי ממוקד Q2. הוגש דוח מסכם.',owner:'מיכל לוי',history:[{dot:'blue',date:'15/04',text:'הוגשה'},{dot:'green',date:'20/06',text:'אושר לתשלום'}]},
+  {id:'BKR-2025-007',consultant:'אורן נחמן',project:'שדרוג תשתיות',amount:75000,date:'01/04/2025',days:84,urg:'h',status:'clarify',desc:'ייעוץ מקצועי לפרויקט שדרוג תשתיות אזור המרכז. בוצעו סקרי שטח וניתוח נתונים.',owner:'יוסי גרינברג',history:[{dot:'blue',date:'01/04',text:'הוגשה'},{dot:'yellow',date:'15/04',text:'בקשת הבהרה'},{dot:'yellow',date:'01/05',text:'תזכורת נשלחה'}]},
+  {id:'BKR-2025-005',consultant:'רחל מור',project:'תכנון דרכים',amount:48000,date:'01/03/2025',days:115,urg:'h',status:'review',desc:'ייעוץ תנועה ותכנון דרכים. הוגשו כל התוצרים הנדרשים.',owner:'מיכל לוי',history:[{dot:'blue',date:'01/03',text:'הוגשה'},{dot:'yellow',date:'01/04',text:'בקשת מסמך נוסף'},{dot:'green',date:'15/04',text:'מסמך התקבל'}]},
+  {id:'BKR-2025-003',consultant:'בני הלפר',project:'שדרוג תשתיות',amount:62000,date:'10/02/2025',days:127,urg:'h',status:'review',desc:'ייעוץ שדרוג תשתיות — שלב א. הפרויקט הושלם והתוצרים הוגשו.',owner:"ד\"ר רוני כהן",history:[{dot:'blue',date:'10/02',text:'הוגשה'},{dot:'yellow',date:'01/03',text:'בקשת הבהרות'}]},
+];
+
+const sLabel={draft:'טיוטה',review:'בבדיקה',clarify:'ממתין להבהרות',approved:'אושר לתשלום',rejected:'נדחה'};
+const sChip={draft:'chip-draft',review:'chip-review',clarify:'chip-clarify',approved:'chip-approved',rejected:'chip-rejected'};
+function slaC(d){return d>90?'sla-crit':d>50?'sla-warn':'sla-ok'}
+function urgH(u){return u==='h'?'<span class="urg-h">גבוהה</span>':u==='m'?'<span class="urg-m">בינונית</span>':'<span class="urg-l">נמוכה</span>'}
+function fmtAmount(n){return '₪'+n.toLocaleString('he-IL')}
+
+// =====================
+// RENDER TABLE
+// =====================
+function renderTable(){
+  const fs = document.getElementById('filterStatus').value;
+  const fp = document.getElementById('filterProject').value;
+  const fq = document.getElementById('filterSearch').value.toLowerCase();
+
+  const filtered = requests.filter(r=>{
+    if(fs && r.status!==fs) return false;
+    if(fp && r.project!==fp) return false;
+    if(fq && !r.consultant.toLowerCase().includes(fq)) return false;
+    return true;
+  });
+
+  document.getElementById('rowCount').textContent = filtered.length+' רשומות';
+  document.getElementById('tBody').innerHTML = filtered.map(r=>`
+    <tr onclick="goToReview('${r.id}')">
+      <td style="font-size:11px;color:#6B7280;font-weight:700">${r.id}</td>
+      <td style="font-weight:700">${r.consultant}</td>
+      <td><span style="background:#F3F4F6;border:1px solid #E5E7EB;border-radius:5px;padding:3px 9px;font-size:11px;color:#374151">${r.project}</span></td>
+      <td style="font-weight:700;color:#1D4ED8">${fmtAmount(r.amount)}</td>
+      <td style="color:#6B7280">${r.date}</td>
+      <td><span class="${slaC(r.days)}">${r.days} יום${r.days>90?' ⚠':''}</span></td>
+      <td>${urgH(r.urg)}</td>
+      <td><span class="chip ${sChip[r.status]}">${sLabel[r.status]}</span></td>
+    </tr>`).join('');
+
+  updateStats();
+}
+
+function updateStats(){
+  const total = requests.length;
+  const approved = requests.filter(r=>r.status==='approved');
+  const pending = requests.filter(r=>r.status==='review'||r.status==='clarify');
+  const sla = requests.filter(r=>r.days>90);
+
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-approved').textContent = approved.length;
+  document.getElementById('stat-approved-sum').textContent = '₪'+approved.reduce((s,r)=>s+r.amount,0).toLocaleString('he-IL');
+  document.getElementById('stat-pending').textContent = pending.length;
+  document.getElementById('stat-sla').textContent = sla.length;
+  document.getElementById('pendingBadge').textContent = pending.length;
+  document.getElementById('dash-crit').textContent = sla.length;
+}
+
+// =====================
+// REVIEW SELECT
+// =====================
+function buildReviewSelect(){
+  const sel = document.getElementById('reviewSelect');
+  sel.innerHTML = requests.map((r,i)=>`<option value="${i}">${r.id} — ${r.consultant} — ${r.project} (${sLabel[r.status]})</option>`).join('');
+}
+
+function goToReview(id){
+  const idx = requests.findIndex(r=>r.id===id);
+  if(idx>=0){
+    document.getElementById('reviewSelect').value = idx;
+    goTo('review');
+    loadReview();
+  }
+}
+
+function loadReview(){
+  const idx = parseInt(document.getElementById('reviewSelect').value);
+  const d = requests[idx];
+  if(!d) return;
+
+  document.getElementById('rv-id').textContent = d.id;
+  document.getElementById('rv-title').textContent = d.project+' — ייעוץ';
+  const sc = document.getElementById('rv-status');
+  sc.textContent = sLabel[d.status];
+  sc.className = 'chip '+sChip[d.status];
+  document.getElementById('rv-consultant').textContent = d.consultant;
+  document.getElementById('rv-project').textContent = d.project;
+  document.getElementById('rv-amount').textContent = fmtAmount(d.amount);
+  document.getElementById('rv-submitted').textContent = d.date;
+  const dc = document.getElementById('rv-days');
+  dc.textContent = d.days+' יום'+(d.days>90?' ⚠':'');
+  dc.className = 'dv '+slaC(d.days);
+  document.getElementById('rv-owner').textContent = d.owner;
+  document.getElementById('rv-desc').textContent = d.desc;
+
+  // History
+  document.getElementById('historyList').innerHTML = d.history.map(h=>`
+    <div class="history-item">
+      <div class="history-dot ${h.dot}"></div>
+      <div><div class="history-date">${h.date}</div><div class="history-text">${h.text}</div></div>
+    </div>`).join('');
+}
+
+function doAction(a){
+  const idx = parseInt(document.getElementById('reviewSelect').value);
+  requests[idx].status = a;
+  const msgs={approved:'הבקשה אושרה לתשלום ✓',clarify:'נשלחה בקשת הבהרה ליועץ 📩',rejected:'הבקשה נדחתה ✗'};
+  const today = new Date();
+  const dd = String(today.getDate()).padStart(2,'0')+'/'+String(today.getMonth()+1).padStart(2,'0');
+  requests[idx].history.push({dot: a==='approved'?'green':a==='rejected'?'blue':'yellow', date:dd, text:msgs[a]});
+  buildReviewSelect();
+  loadReview();
+  renderTable();
+  buildAlerts();
+  showToast(msgs[a]);
+}
+
+// =====================
+// SUBMIT
+// =====================
+function submitRequest(){
+  const name = document.getElementById('f-name').value.trim();
+  const project = document.getElementById('f-project').value;
+  const amount = parseInt(document.getElementById('f-amount').value)||0;
+  const desc = document.getElementById('f-desc').value.trim();
+  const owner = document.getElementById('f-owner').value;
+  const urg = document.getElementById('f-urgency').value;
+
+  if(!name){showToast('⚠ יש להזין שם יועץ');return}
+  if(!project){showToast('⚠ יש לבחור פרויקט');return}
+  if(!amount){showToast('⚠ יש להזין סכום');return}
+  if(desc.length<10){showToast('⚠ יש להזין תיאור ביצוע');return}
+
+  const nextNum = requests.length+1;
+  const id = 'BKR-2025-0'+String(nextNum+14).padStart(2,'0');
+  const today = new Date();
+  const dateStr = String(today.getDate()).padStart(2,'0')+'/'+String(today.getMonth()+1).padStart(2,'0')+'/'+today.getFullYear();
+
+  const newReq = {
+    id, consultant:name, project, amount, date:dateStr, days:1, urg, status:'review',
+    desc, owner: owner||"ד\"ר רוני כהן",
+    history:[{dot:'blue',date:dateStr.slice(0,5),text:'הוגשה ע"י '+name}]
+  };
+
+  requests.unshift(newReq);
+
+  // Reset form
+  document.getElementById('f-name').value='';
+  document.getElementById('f-contract').value='';
+  document.getElementById('f-project').value='';
+  document.getElementById('f-owner').value='';
+  document.getElementById('f-amount').value='';
+  document.getElementById('f-desc').value='';
+  document.getElementById('f-urgency').value='l';
+  document.getElementById('fileList').innerHTML='';
+
+  buildReviewSelect();
+  renderTable();
+  buildAlerts();
+
+  showToast('✓ הבקשה '+id+' הוגשה בהצלחה!');
+  goTo('home');
+}
+
+function saveDraft(){
+  const name = document.getElementById('f-name').value.trim() || 'טיוטה חדשה';
+  const project = document.getElementById('f-project').value || 'לא הוגדר';
+  const amount = parseInt(document.getElementById('f-amount').value)||0;
+  const desc = document.getElementById('f-desc').value.trim() || 'ללא תיאור';
+  const owner = document.getElementById('f-owner').value || "ד\"ר רוני כהן";
+  const urg = document.getElementById('f-urgency').value;
+  const today = new Date();
+  const dateStr = String(today.getDate()).padStart(2,'0')+'/'+String(today.getMonth()+1).padStart(2,'0')+'/'+today.getFullYear();
+  const id = 'BKR-2025-DRAFT-'+Date.now().toString().slice(-4);
+  const newReq = {id,consultant:name,project,amount,date:dateStr,days:0,urg,status:'draft',desc,owner,history:[{dot:'blue',date:dateStr.slice(0,5),text:'טיוטה נשמרה'}]};
+  requests.unshift(newReq);
+  buildReviewSelect();
+  renderTable();
+  showToast('💾 טיוטה נשמרה — '+id);
+}
+
+// =====================
+// ALERTS
+// =====================
+function buildAlerts(){
+  const crits = requests.filter(r=>r.days>90).sort((a,b)=>b.days-a.days);
+  const warns = requests.filter(r=>r.days>50&&r.days<=90).sort((a,b)=>b.days-a.days);
+  const all = [...crits,...warns];
+  document.getElementById('alertList').innerHTML = all.map(r=>{
+    const isCrit = r.days>90;
+    return `<div class="alert-item ${isCrit?'ai-crit':'ai-warn'}">
+      <span class="${isCrit?'ai-text-crit':'ai-text-warn'}"><strong>${r.id}</strong> — ${r.consultant} — <strong>${r.days} יום</strong> בטיפול</span>
+      <button class="btn ${isCrit?'btn-danger':'btn-warn'} btn-sm" onclick="goToReview('${r.id}')">טפל עכשיו</button>
+    </div>`;
+  }).join('') || '<div style="color:#6B7280;font-size:13px;padding:8px">אין התראות פעילות ✓</div>';
+}
+
+// =====================
+// NAV
+// =====================
+const screens=['home','submit','review','dashboard'];
+const titles={home:'מסך בית — רשימת בקשות',submit:'הגשת בקשה חדשה',review:'טיפול ואישור בקשה',dashboard:'דשבורד בקרת SLA'};
+
+function goTo(s){
+  screens.forEach(id=>{
+    document.getElementById('screen-'+id).classList.toggle('active', id===s);
+    document.getElementById('nav-'+id).classList.toggle('active', id===s);
+  });
+  document.getElementById('pageTitle').textContent = titles[s];
+  if(s==='review'){buildReviewSelect();loadReview();}
+}
+
+// =====================
+// ROLE TOGGLE
+// =====================
+let isOrg = false;
+
+function toggleRole(){
+  isOrg = !isOrg;
+  document.getElementById('pill-consultant').classList.toggle('active',!isOrg);
+  document.getElementById('pill-org').classList.toggle('active',isOrg);
+
+  const badge = document.getElementById('roleBadge');
+  badge.textContent = isOrg ? '🏢 עובד ארגון' : '👤 יועץ חיצוני';
+  badge.className = 'topbar-role-badge'+(isOrg?' org':'');
+
+  // All banners
+  document.querySelectorAll('.banner-consultant').forEach(el=>el.style.display=isOrg?'none':'flex');
+  document.querySelectorAll('.banner-org').forEach(el=>el.style.display=isOrg?'flex':'none');
+
+  // Review panel visibility
+  document.getElementById('orgActions').style.display = isOrg?'block':'none';
+  document.getElementById('consultantStatus').style.display = isOrg?'none':'block';
+  document.getElementById('orgNotes').style.display = isOrg?'block':'none';
+
+  showToast(isOrg ? '🏢 מצב עובד ארגון' : '👤 מצב יועץ חיצוני');
+}
+
+// =====================
+// UPLOAD SIM
+// =====================
+function addFile(){
+  const fl = document.getElementById('fileList');
+  const d = document.createElement('div');
+  d.className = 'file-pill';
+  const names=['חשבונית','דוח_ביניים','פרוטוקול','חוות_דעת'];
+  const name = names[Math.floor(Math.random()*names.length)]+'_'+Math.floor(Math.random()*900+100)+'.pdf';
+  d.innerHTML = `<span class="file-pill-name">📄 ${name}</span><span style="display:flex;align-items:center;gap:12px"><span class="file-pill-size">${Math.floor(Math.random()*400+50)} KB</span><span class="file-pill-del" onclick="this.closest('.file-pill').remove()">✕</span></span>`;
+  fl.appendChild(d);
+}
+
+// =====================
+// TOAST
+// =====================
+let toastTimer;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// =====================
+// INIT
+// =====================
+renderTable();
+buildAlerts();
+</script>
+</body>
+</html>
